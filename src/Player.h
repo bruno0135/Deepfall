@@ -40,6 +40,10 @@ private:
 	void ApplyPhysics();
 	void Draw(float dt);
 
+	
+	void CheckOutOfBounds();
+	void Respawn();
+
 public:
 
 	//Declare player parameters
@@ -55,6 +59,9 @@ public:
 	PhysBody* pbody = nullptr;
 	float jumpForce = 2.5f; // The force to apply when jumping
 	bool isJumping = false; // Flag to check if the player is currently jumping
+
+	// NUEVO  punto de reaparición
+	Vector2D respawnPos = { 100, 200 };
 
 private:
 	b2Vec2 velocity = { 0.0f, 0.0f };
