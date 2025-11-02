@@ -8,9 +8,10 @@ Is a 2d platformer game focused in adventure and exploration.
 
 # 🧱 Project Details
 Team Members:
--[Victor Perez](https://github.com/victorpeor) – [Code]
 
--[Bruno Gomez](https://github.com/bruno0135) – [Level Design/Artist]
+-[Victor Perez](https://github.com/victorpeor)–[Code]
+
+-[Bruno Gomez](https://github.com/bruno0135)–[Level Design/Artist]
 
 
 # 🎮 Gameplay Controls
