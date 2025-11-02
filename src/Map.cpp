@@ -208,6 +208,28 @@ bool Map::Load(std::string path, std::string fileName)
             }
         }
 
+        //Sensor de Plataforma roja 
+        for (const auto& mapLayer : mapData.layers) {
+            if (mapLayer->name == "DeathZones") {
+                for (int i = 0; i < mapData.height; i++) {
+                    for (int j = 0; j < mapData.width; j++) {
+                        int gid = mapLayer->Get(i, j);
+                        if (gid > 0) {
+                            Vector2D mapCoord = MapToWorld(i, j);
+                            PhysBody* deathZone = Engine::GetInstance().physics.get()->CreateRectangleSensor(
+                                mapCoord.getX() + mapData.tileWidth / 2,
+                                mapCoord.getY() + mapData.tileHeight / 2,
+                                mapData.tileWidth,
+                                mapData.tileHeight,
+                                STATIC
+                            );
+                            deathZone->ctype = ColliderType::DEATH_ZONE;
+                        }
+                    }
+                }
+            }
+        }
+
         // Sensores de daño y vacío (huecos)
         for (const auto& mapLayer : mapData.layers)
         {
