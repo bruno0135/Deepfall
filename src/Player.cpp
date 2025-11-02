@@ -11,7 +11,6 @@
 #include "Map.h"
 #include <cstring>
 
-// Ajustes del primer frame del spritesheet (márgenes si tu atlas los tuviera)
 static const int SPR_MARGIN_X = 0;
 static const int SPR_MARGIN_Y = 0;
 
@@ -30,21 +29,25 @@ bool Player::Awake()
 
 bool Player::Start()
 {
-    respawnPos = position;
-
-    // Cargamos solo la textura; no usamos AnimationSet para dibujar
+    // Carga de textura y dimensiones del tile antes de ajustar spawn
     texture = Engine::GetInstance().textures->Load("Assets/Textures/player1_spritesheet.png");
-
-    // Tamaño de un tile del spritesheet
     texW = 32;
     texH = 32;
 
+    // Guardar spawn base y ajustarlo al suelo usando la capa "Collisions"
+    respawnPos = position;
+    {
+        float groundY = Engine::GetInstance().map->GetGroundYBelow(respawnPos.getX(), respawnPos.getY());
+        respawnPos.setY(groundY - (float)(texH / 2)); // apoyar "pies"
+        position = respawnPos;
+    }
+
+    // Crear cuerpo físico en el spawn ajustado
     pbody = Engine::GetInstance().physics->CreateCircle((int)position.getX(), (int)position.getY(), texW / 2, bodyType::DYNAMIC);
     pbody->listener = this;
     pbody->ctype = ColliderType::PLAYER;
 
     pickCoinFxId = Engine::GetInstance().audio->LoadFx("Assets/Audio/Fx/coin-collision-sound-342335.wav");
-
     jumpTimer.Start();
 
     return true;
@@ -103,8 +106,11 @@ void Player::Respawn()
     isJumping = false;
     jumpCount = 0;
 
-    // FIX: quitado paréntesis extra al final
-    pbody->SetPosition((int)respawnPos.getX(), (int)respawnPos.getY());
+    // Recalcular el suelo por si el respawn está sobre vacío
+    float groundY = Engine::GetInstance().map->GetGroundYBelow(respawnPos.getX(), respawnPos.getY());
+    float spawnY = groundY - (float)(texH / 2);
+
+    pbody->SetPosition((int)respawnPos.getX(), (int)spawnY);
     Engine::GetInstance().physics->SetLinearVelocity(pbody, { 0, 0 });
 
     jumpTimer.Start();
@@ -178,7 +184,7 @@ void Player::ApplyPhysics()
 
 void Player::Draw(float dt)
 {
-    // Primer tile del spritesheet en (0,0), tamaño texW x texH
+    // Primer tile del spritesheet en (0,0) de tamaño texW x texH
     SDL_Rect animFrame = { SPR_MARGIN_X, SPR_MARGIN_Y, texW, texH };
 
     int x, y;
@@ -304,10 +310,8 @@ void Player::OnCollisionEnd(PhysBody* physA, PhysBody* physB)
     switch (physB->ctype)
     {
     case ColliderType::PLATFORM:
-        if (platformContacts > 0)
-            platformContacts--;
-        if (platformContacts == 0)
-            grounded = false;
+        if (platformContacts > 0) platformContacts--;
+        if (platformContacts == 0) grounded = false;
         break;
 
     case ColliderType::ITEM:

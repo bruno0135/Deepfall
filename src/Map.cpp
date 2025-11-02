@@ -12,17 +12,12 @@ Map::Map() : Module(), mapLoaded(false)
     name = "map";
 }
 
-// Destructor
-Map::~Map()
-{
-}
+Map::~Map() {}
 
-// Called before render is available
 bool Map::Awake()
 {
     name = "map";
     LOG("Loading Map Parser");
-
     return true;
 }
 
@@ -86,27 +81,19 @@ TileSet* Map::GetTilesetFromTileId(int gid) const
     return set;
 }
 
-// Called before quitting
 bool Map::CleanUp()
 {
     LOG("Unloading map");
 
-    for (const auto& tileset : mapData.tilesets)
-    {
-        delete tileset;
-    }
+    for (const auto& tileset : mapData.tilesets) delete tileset;
     mapData.tilesets.clear();
 
-    for (const auto& layer : mapData.layers)
-    {
-        delete layer;
-    }
+    for (const auto& layer : mapData.layers) delete layer;
     mapData.layers.clear();
 
     return true;
 }
 
-// Load new map
 bool Map::Load(std::string path, std::string fileName)
 {
     bool ret = false;
@@ -128,10 +115,8 @@ bool Map::Load(std::string path, std::string fileName)
     {
         mapData.width = mapFileXML.child("map").attribute("width").as_int();
         mapData.height = mapFileXML.child("map").attribute("height").as_int();
-        mapData.tileWidth =
-            mapFileXML.child("map").attribute("tilewidth").as_int();
-        mapData.tileHeight =
-            mapFileXML.child("map").attribute("tileheight").as_int();
+        mapData.tileWidth = mapFileXML.child("map").attribute("tilewidth").as_int();
+        mapData.tileHeight = mapFileXML.child("map").attribute("tileheight").as_int();
 
         // Tilesets
         for (pugi::xml_node tilesetNode = mapFileXML.child("map").child("tileset");
@@ -148,10 +133,8 @@ bool Map::Load(std::string path, std::string fileName)
             tileSet->tileCount = tilesetNode.attribute("tilecount").as_int();
             tileSet->columns = tilesetNode.attribute("columns").as_int();
 
-            std::string imgName =
-                tilesetNode.child("image").attribute("source").as_string();
-            tileSet->texture =
-                Engine::GetInstance().textures->Load((mapPath + imgName).c_str());
+            std::string imgName = tilesetNode.child("image").attribute("source").as_string();
+            tileSet->texture = Engine::GetInstance().textures->Load((mapPath + imgName).c_str());
 
             mapData.tilesets.push_back(tileSet);
         }
@@ -169,8 +152,7 @@ bool Map::Load(std::string path, std::string fileName)
 
             LoadProperties(layerNode, mapLayer->properties);
 
-            for (pugi::xml_node tileNode =
-                layerNode.child("data").child("tile");
+            for (pugi::xml_node tileNode = layerNode.child("data").child("tile");
                 tileNode != NULL;
                 tileNode = tileNode.next_sibling("tile"))
             {
@@ -194,13 +176,12 @@ bool Map::Load(std::string path, std::string fileName)
                         if (gid > 0)
                         {
                             Vector2D mapCoord = MapToWorld(i, j);
-                            PhysBody* c1 =
-                                Engine::GetInstance().physics.get()->CreateRectangle(
-                                    (int)(mapCoord.getX() + (mapData.tileWidth * 0.5f)),
-                                    (int)(mapCoord.getY() + (mapData.tileHeight * 0.5f)),
-                                    mapData.tileWidth,
-                                    mapData.tileHeight,
-                                    STATIC);
+                            PhysBody* c1 = Engine::GetInstance().physics.get()->CreateRectangle(
+                                (int)(mapCoord.getX() + (mapData.tileWidth * 0.5f)),
+                                (int)(mapCoord.getY() + (mapData.tileHeight * 0.5f)),
+                                mapData.tileWidth,
+                                mapData.tileHeight,
+                                STATIC);
                             c1->ctype = ColliderType::PLATFORM;
                         }
                     }
@@ -208,7 +189,7 @@ bool Map::Load(std::string path, std::string fileName)
             }
         }
 
-        //Sensor de Plataforma roja 
+        // Sensor de Plataforma roja 
         for (const auto& mapLayer : mapData.layers) {
             if (mapLayer->name == "DeathZones") {
                 for (int i = 0; i < mapData.height; i++) {
@@ -243,13 +224,12 @@ bool Map::Load(std::string path, std::string fileName)
                         if (gid > 0)
                         {
                             Vector2D mapCoord = MapToWorld(i, j);
-                            PhysBody* s =
-                                Engine::GetInstance().physics.get()->CreateRectangleSensor(
-                                    (int)(mapCoord.getX() + (mapData.tileWidth * 0.5f)),
-                                    (int)(mapCoord.getY() + (mapData.tileHeight * 0.5f)),
-                                    mapData.tileWidth,
-                                    mapData.tileHeight,
-                                    STATIC);
+                            PhysBody* s = Engine::GetInstance().physics.get()->CreateRectangleSensor(
+                                (int)(mapCoord.getX() + (mapData.tileWidth * 0.5f)),
+                                (int)(mapCoord.getY() + (mapData.tileHeight * 0.5f)),
+                                mapData.tileWidth,
+                                mapData.tileHeight,
+                                STATIC);
                             s->ctype = ColliderType::ENEMY;
                         }
                     }
@@ -268,8 +248,7 @@ bool Map::Load(std::string path, std::string fileName)
             LOG("Error while parsing map file: %s", mapPathName.c_str());
         }
 
-        if (mapFileXML)
-            mapFileXML.reset();
+        if (mapFileXML) mapFileXML.reset();
     }
 
     mapLoaded = ret;
@@ -296,7 +275,6 @@ int Map::WorldToMapY(float worldY) const
 
 float Map::GetGroundYBelow(float worldX, float worldY) const
 {
-    // localizar la capa de colisiones
     const MapLayer* collisions = nullptr;
     for (const auto& layer : mapData.layers)
     {
@@ -311,14 +289,14 @@ float Map::GetGroundYBelow(float worldX, float worldY) const
     const int j = WorldToMapX(worldX);
     int i = WorldToMapY(worldY);
     if (j < 0 || j >= collisions->width) return worldY;
-
     if (i < 0) i = 0;
+
     for (; i < collisions->height; ++i)
     {
         int gid = (int)collisions->Get(i, j);
         if (gid > 0)
         {
-            // parte superior del tile i (en mundo)
+            // Parte superior del tile i en mundo
             return (float)(i * mapData.tileHeight);
         }
     }
@@ -330,8 +308,7 @@ bool Map::LoadProperties(pugi::xml_node& node, Properties& properties)
 {
     bool ret = false;
 
-    for (pugi::xml_node propertieNode =
-        node.child("properties").child("property");
+    for (pugi::xml_node propertieNode = node.child("properties").child("property");
         propertieNode;
         propertieNode = propertieNode.next_sibling("property"))
     {
