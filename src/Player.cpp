@@ -53,6 +53,9 @@ bool Player::Start() {
 	//initialize audio effect
 	pickCoinFxId = Engine::GetInstance().audio->LoadFx("Assets/Audio/Fx/coin-collision-sound-342335.wav");
 
+	// preparar cooldown de salto
+	jumpTimer.Start();
+
 	return true;
 }
 
@@ -100,6 +103,13 @@ void Player::Respawn()
 
 	// Reset anim
 	anims.SetCurrent("idle");
+
+	// al reaparecer permitir salto de inmediato
+	jumpTimer.Start();
+
+	// reset de estado de suelo
+	platformContacts = 0;
+	grounded = false;
 }
 
 void Player::Teleport() {
@@ -126,11 +136,35 @@ void Player::Move() {
 }
 
 void Player::Jump() {
-	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_SPACE) == KEY_DOWN && jumpCount < maxJumps) {
-		Engine::GetInstance().physics->ApplyLinearImpulseToCenter(pbody, 0.0f, -jumpForce, true);
+	// cooldown mínimo entre saltos
+	const bool cooldownOk = (jumpTimer.ReadMSec() >= jumpCooldownMs);
+
+	// condición de salto: permitir en suelo o doble salto en aire
+	const bool canJump = (grounded && jumpCount < maxJumps) || (!grounded && jumpCount < maxJumps);
+
+	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_SPACE) == KEY_DOWN
+		&& canJump
+		&& cooldownOk)
+	{
+		// fuerza distinta: suelo vs aire
+		const float force = grounded ? jumpForceGround : jumpForceAir;
+
+		Engine::GetInstance().physics->ApplyLinearImpulseToCenter(pbody, 0.0f, -force, true);
 		anims.SetCurrent("jump");
 		isJumping = true;
 		jumpCount++;
+
+		// limitar velocidad vertical ascendente para no “techar”
+		float vy = Engine::GetInstance().physics->GetYVelocity(pbody);
+		if (vy < -maxRiseSpeed) {
+			Engine::GetInstance().physics->SetYVelocity(pbody, -maxRiseSpeed);
+		}
+
+		// tras saltar ya no estamos en suelo
+		grounded = false;
+
+		// reiniciar cooldown
+		jumpTimer.Start();
 	}
 }
 
@@ -206,19 +240,37 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 	switch (physB->ctype)
 	{
 	case ColliderType::PLATFORM:
-		LOG("Collision PLATFORM");
-		isJumping = false;
-		jumpCount = 0;
-		anims.SetCurrent("idle");
-		break;
+	{
+		// solo consideramos “suelo” si no vamos subiendo (evita reset por techo/pared)
+		float vy = Engine::GetInstance().physics->GetYVelocity(pbody);
+
+		if (vy >= -0.1f) {
+			platformContacts++;
+
+			// transición a grounded: de 0 contactos a 1 o más
+			if (!grounded) {
+				grounded = true;
+				isJumping = false;
+				jumpCount = 0;
+				anims.SetCurrent("idle");
+
+				// permitir salto inmediato tras aterrizar
+				jumpTimer.Start();
+			}
+		}
+	}
+	break;
+
 	case ColliderType::ITEM:
 		LOG("Collision ITEM");
 		Engine::GetInstance().audio->PlayFx(pickCoinFxId);
 		physB->listener->Destroy();
 		break;
+
 	case ColliderType::UNKNOWN:
 		LOG("Collision UNKNOWN");
 		break;
+
 	default:
 		break;
 	}
@@ -229,14 +281,22 @@ void Player::OnCollisionEnd(PhysBody* physA, PhysBody* physB)
 	switch (physB->ctype)
 	{
 	case ColliderType::PLATFORM:
-		LOG("End Collision PLATFORM");
+		if (platformContacts > 0) {
+			platformContacts--;
+		}
+		if (platformContacts == 0) {
+			grounded = false;
+		}
 		break;
+
 	case ColliderType::ITEM:
 		LOG("End Collision ITEM");
 		break;
+
 	case ColliderType::UNKNOWN:
 		LOG("End Collision UNKNOWN");
 		break;
+
 	default:
 		break;
 	}

@@ -2,6 +2,7 @@
 
 #include "Entity.h"
 #include "Animation.h"
+#include "Timer.h"
 #include <box2d/box2d.h>
 #include <SDL3/SDL.h>
 
@@ -61,6 +62,17 @@ public:
 	// Doble salto
 	int jumpCount = 0;
 	const int maxJumps = 2;
+
+	// Control de salto (anti-spam y altura)
+	float jumpForceGround = 2.2f;     // fuerza del salto en suelo (ligeramente menor que antes)
+	float jumpForceAir = 1.6f;     // fuerza del salto en el aire (más baja para no “techar”)
+	float maxRiseSpeed = 6.0f;     // límite a la velocidad vertical hacia arriba
+	float jumpCooldownMs = 200.0f;   // tiempo mínimo entre saltos (ms)
+	Timer jumpTimer;                  // cronómetro de cooldown
+
+	// Estado de suelo para evitar spam por colisiones laterales/techo
+	int   platformContacts = 0;       // número de contactos simultáneos con plataformas
+	bool  grounded = false;   // verdadero si hay apoyo “real” en suelo
 
 	// NUEVO  punto de reaparición
 	Vector2D respawnPos = { 100, 200 };
