@@ -290,7 +290,7 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB)
         break;
     case ColliderType::DEATH_ZONE:
         LOG("¡Has tocado la zona de muerte!");
-        Respawn();
+        Die();
         break;
     case ColliderType::UNKNOWN:
         LOG("Collision UNKNOWN");
