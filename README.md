@@ -16,11 +16,11 @@ Team Members:
 
 # 🎮 Gameplay Controls
 
- - Move Left 	A  
- - Move Right 	D 
- - Jump 	Space 
- - Quit Game |	ESC |
-...	...
+ - Move Left 	A. 
+ - Move Right 	D.
+ - Jump 	Space. 
+ - Quit Game ESC .
+
 #  🧑‍💻 Debug Controls 
 
 - Show Menu H.
