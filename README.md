@@ -15,37 +15,55 @@ Team Members:
 
 
 # 🎮 Gameplay Controls
-
-|Move Left|	A|
-|Move Right|	D|
-|Jump|	Space|
-|Quit Game|	ESC|
+| ------------- | ------------- | -------------|
+| Move Left |	A |
+| Move Right |	D |
+| Jump |	Space |
+| Quit Game |	ESC |
 ...	...
 #  🧑‍💻 Debug Controls (optional)
+
 |Show Menu|H|
+
 |Toggle God Mode|	F10|
+
 |Show Colliders / Logic	|F9|
+
 |Respawn | T |
+
 |Cap FPS|F11|
-...	...
+
 
 # 🚀 Last Release (v[1.0.0])
 -Level 1 design.
--Die animation.
--Collisions in map.
--Movement player.
--Player animations (Idle, Walk, Jump).
--Added void.
--Player returns to the respawn if get damage.
--Double Jump.
--Help menu (H) with diferents options(F9, F10, F11).
--Bug fixes:
--Cooldown doble jump
--Cam now follow player even if he fall in the void.
+
+- Die animation.
+
+- Collisions in map.
+
+- Movement player.
+
+- Player animations (Idle, Walk, Jump).
+ 
+- Added void.
+  
+- Player returns to the respawn if get damage.
+  
+- Double Jump.
+  
+- Help menu (H) with diferents options(F9, F10, F11).
+  
+- Bug fixes:
+ 
+- Cooldown doble jump.
+  
+- Cam now follow player even if he fall in the void.
 
 # 📦 Installation / Execution
--Download the latest .zip file from the Releases section.
--Extract all files to a folder.
--Run [GameName].exe.
+- Download the latest .zip file from the Releases section.
+  
+- Extract all files to a folder.
+  
+- Run [GameName].exe.
 
 
