@@ -9,6 +9,11 @@
 #include "Physics.h"
 #include "EntityManager.h"
 #include "Map.h"
+#include <cstring>
+
+// Ajustes del primer frame del spritesheet (márgenes si tu atlas los tuviera)
+static const int SPR_MARGIN_X = 0;
+static const int SPR_MARGIN_Y = 0;
 
 Player::Player() : Entity(EntityType::PLAYER)
 {
@@ -25,27 +30,15 @@ bool Player::Awake()
 
 bool Player::Start()
 {
-    // Guardamos spawn base
     respawnPos = position;
 
-    // Ajustar spawn al suelo de la capa "Collisions"
-    float groundY = Engine::GetInstance().map->GetGroundYBelow(respawnPos.getX(), respawnPos.getY());
-    // colocar al jugador apoyado: top del tile - mitad del alto del sprite
-    respawnPos.setY(groundY - (float)(texH / 2));
-
-    // Igualamos la posición lógica al spawn ajustado antes de crear el cuerpo físico
-    position = respawnPos;
-
-    std::unordered_map<int, std::string> aliases = { {0,"idle"},{11,"move"},{22,"jump"},{33,"die"} };
-    anims.LoadFromTSX("Assets/Textures/player1Spritesheet.tsx", aliases);
-    anims.SetCurrent("idle");
-    anims.SetCurrent("move");
-    anims.SetCurrent("jump");
-
+    // Cargamos solo la textura; no usamos AnimationSet para dibujar
     texture = Engine::GetInstance().textures->Load("Assets/Textures/player1_spritesheet.png");
 
+    // Tamaño de un tile del spritesheet
     texW = 32;
     texH = 32;
+
     pbody = Engine::GetInstance().physics->CreateCircle((int)position.getX(), (int)position.getY(), texW / 2, bodyType::DYNAMIC);
     pbody->listener = this;
     pbody->ctype = ColliderType::PLAYER;
@@ -110,14 +103,9 @@ void Player::Respawn()
     isJumping = false;
     jumpCount = 0;
 
-    // Recalcular suelo por si el spawn está sobre vacío
-    float groundY = Engine::GetInstance().map->GetGroundYBelow(respawnPos.getX(), respawnPos.getY());
-    float spawnY = groundY - (float)(texH / 2);
-
-    pbody->SetPosition((int)respawnPos.getX(), (int)spawnY);
+    // FIX: quitado paréntesis extra al final
+    pbody->SetPosition((int)respawnPos.getX(), (int)respawnPos.getY());
     Engine::GetInstance().physics->SetLinearVelocity(pbody, { 0, 0 });
-
-    anims.SetCurrent("idle");
 
     jumpTimer.Start();
 
@@ -131,7 +119,6 @@ void Player::Die()
 
     isDying = true;
     Engine::GetInstance().physics->SetLinearVelocity(pbody, { 0.0f, 0.0f });
-    anims.SetCurrent("die");
     dieTimer.Start();
 }
 
@@ -152,12 +139,10 @@ void Player::Move()
     if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_A) == KEY_REPEAT)
     {
         velocity.x = -speed;
-        anims.SetCurrent("move");
     }
     if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_D) == KEY_REPEAT)
     {
         velocity.x = speed;
-        anims.SetCurrent("move");
     }
 }
 
@@ -171,7 +156,6 @@ void Player::Jump()
         const float force = grounded ? jumpForceGround : jumpForceAir;
 
         Engine::GetInstance().physics->ApplyLinearImpulseToCenter(pbody, 0.0f, -force, true);
-        anims.SetCurrent("jump");
         isJumping = true;
         jumpCount++;
 
@@ -194,8 +178,8 @@ void Player::ApplyPhysics()
 
 void Player::Draw(float dt)
 {
-    anims.Update(dt);
-    const SDL_Rect& animFrame = anims.GetCurrentFrame();
+    // Primer tile del spritesheet en (0,0), tamaño texW x texH
+    SDL_Rect animFrame = { SPR_MARGIN_X, SPR_MARGIN_Y, texW, texH };
 
     int x, y;
     pbody->GetPosition(x, y);
@@ -284,7 +268,6 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB)
                 grounded = true;
                 isJumping = false;
                 jumpCount = 0;
-                anims.SetCurrent("idle");
                 jumpTimer.Start();
             }
         }
@@ -301,10 +284,12 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB)
         LOG("Collision ENEMY");
         Die();
         break;
+
     case ColliderType::DEATH_ZONE:
-        LOG("¡Has tocado la zona de muerte!");
+        LOG("Has tocado la zona de muerte");
         Die();
         break;
+
     case ColliderType::UNKNOWN:
         LOG("Collision UNKNOWN");
         break;
