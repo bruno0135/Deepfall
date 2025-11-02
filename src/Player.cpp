@@ -1,4 +1,4 @@
-#include "Player.h"
+﻿#include "Player.h"
 #include "Engine.h"
 #include "Textures.h"
 #include "Audio.h"
@@ -59,8 +59,6 @@ bool Player::Start() {
 bool Player::Update(float dt)
 {
 	GetPhysicsValues();
-
-	
 	CheckOutOfBounds();
 
 	Move();
@@ -75,7 +73,6 @@ bool Player::Update(float dt)
 
 	return true;
 }
-
 
 void Player::CheckOutOfBounds()
 {
@@ -93,6 +90,7 @@ void Player::Respawn()
 {
 	// Reset jump state
 	isJumping = false;
+	jumpCount = 0;
 
 	// Reposicionar cuerpo
 	pbody->SetPosition((int)respawnPos.getX(), (int)respawnPos.getY());
@@ -104,10 +102,8 @@ void Player::Respawn()
 	anims.SetCurrent("idle");
 }
 
-
 void Player::Teleport() {
 	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_T) == KEY_DOWN) {
-		
 		Respawn();
 	}
 }
@@ -130,10 +126,11 @@ void Player::Move() {
 }
 
 void Player::Jump() {
-	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_SPACE) == KEY_DOWN && isJumping == false) {
+	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_SPACE) == KEY_DOWN && jumpCount < maxJumps) {
 		Engine::GetInstance().physics->ApplyLinearImpulseToCenter(pbody, 0.0f, -jumpForce, true);
 		anims.SetCurrent("jump");
 		isJumping = true;
+		jumpCount++;
 	}
 }
 
@@ -177,7 +174,6 @@ void Player::Draw(float dt)
 
 	Engine::GetInstance().render->camera.x = desiredCameraX;
 
-
 	float cameraOffsetY = cameraH / 2.0f;
 	int desiredCameraY = (int)(-position.getY() + cameraOffsetY);
 
@@ -204,7 +200,6 @@ bool Player::CleanUp()
 	return true;
 }
 
-// L08 TODO 6: Define OnCollision function for the player. 
 void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 	if (godMode) return;
 
@@ -213,6 +208,7 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 	case ColliderType::PLATFORM:
 		LOG("Collision PLATFORM");
 		isJumping = false;
+		jumpCount = 0;
 		anims.SetCurrent("idle");
 		break;
 	case ColliderType::ITEM:
@@ -246,7 +242,6 @@ void Player::OnCollisionEnd(PhysBody* physA, PhysBody* physB)
 	}
 }
 
-// God Mode 
 void Player::ToggleGodMode()
 {
 	godMode = !godMode;
@@ -271,4 +266,3 @@ void Player::HandleGodMode(float dt)
 
 	Engine::GetInstance().physics->SetLinearVelocity(pbody, { vx, vy });
 }
-

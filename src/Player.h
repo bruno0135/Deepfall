@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Entity.h"
 #include "Animation.h"
@@ -27,7 +27,7 @@ public:
 	void OnCollision(PhysBody* physA, PhysBody* physB);
 	void OnCollisionEnd(PhysBody* physA, PhysBody* physB);
 
-	// --- GOD MODE (público para que el motor pueda hacer toggle) ---
+	// --- GOD MODE (pÃºblico para que el motor pueda hacer toggle) ---
 	void ToggleGodMode();
 	void HandleGodMode(float dt);
 
@@ -39,8 +39,6 @@ private:
 	void Teleport();
 	void ApplyPhysics();
 	void Draw(float dt);
-
-	
 	void CheckOutOfBounds();
 	void Respawn();
 
@@ -60,7 +58,11 @@ public:
 	float jumpForce = 2.5f; // The force to apply when jumping
 	bool isJumping = false; // Flag to check if the player is currently jumping
 
-	// NUEVO  punto de reaparición
+	// Doble salto
+	int jumpCount = 0;
+	const int maxJumps = 2;
+
+	// NUEVO  punto de reapariciÃ³n
 	Vector2D respawnPos = { 100, 200 };
 
 private:
