@@ -9,8 +9,8 @@ struct Properties
 {
     struct Property
     {
-        std::string name;
-        bool value; //We assume that we are going to work only with bool for the moment
+        std::string name = "";
+        bool value = false; // We assume bool for now
     };
 
     std::list<Property*> propertyList;
@@ -21,31 +21,30 @@ struct Properties
         {
             delete property;
         }
-
         propertyList.clear();
     }
 
     // L09: DONE 7: Method to ask for the value of a custom property
     Property* GetProperty(const char* name)
     {
-        for (const auto& property : propertyList) {
-            if (property->name == name) {
+        for (const auto& property : propertyList)
+        {
+            if (property->name == name)
+            {
                 return property;
             }
         }
-
         return nullptr;
     }
-
 };
 
 struct MapLayer
 {
     // L07: TODO 1: Add the info to the MapLayer Struct
-    int id;
-    std::string name;
-    int width;
-    int height;
+    int id = 0;
+    std::string name = "";
+    int width = 0;
+    int height = 0;
     std::vector<int> tiles;
     Properties properties;
 
@@ -58,24 +57,24 @@ struct MapLayer
 
 // L06: TODO 2: Create a struct to hold information for a TileSet
 // Ignore Terrain Types and Tile Types for now, but we want the image!
-
 struct TileSet
 {
-    int firstGid;
-    std::string name;
-    int tileWidth;
-    int tileHeight;
-    int spacing;
-    int margin;
-    int tileCount;
-    int columns;
-    SDL_Texture* texture;
+    int firstGid = 0;
+    std::string name = "";
+    int tileWidth = 0;
+    int tileHeight = 0;
+    int spacing = 0;
+    int margin = 0;
+    int tileCount = 0;
+    int columns = 0;
+    SDL_Texture* texture = nullptr;
 
     // L07: TODO 7: Implement the method that receives the gid and returns a Rect
-    SDL_Rect GetRect(unsigned int gid) {
+    SDL_Rect GetRect(unsigned int gid)
+    {
         SDL_Rect rect = { 0 };
 
-        int relativeIndex = gid - firstGid;
+        int relativeIndex = (int)gid - firstGid;
         rect.w = tileWidth;
         rect.h = tileHeight;
         rect.x = margin + (tileWidth + spacing) * (relativeIndex % columns);
@@ -83,16 +82,15 @@ struct TileSet
 
         return rect;
     }
-
 };
 
 // L06: TODO 1: Create a struct needed to hold the information to Map node
 struct MapData
 {
-	int width;
-	int height;
-	int tileWidth;
-	int tileHeight;
+    int width = 0;
+    int height = 0;
+    int tileWidth = 0;
+    int tileHeight = 0;
     std::list<TileSet*> tilesets;
 
     // L07: TODO 2: Add the info to the MapLayer Struct
@@ -132,15 +130,15 @@ public:
     // L09: TODO 6: Load a group of properties 
     bool LoadProperties(pugi::xml_node& node, Properties& properties);
 
-	// L10: TODO 7: Create a method to get the map size in pixels
-	Vector2D GetMapSizeInPixels();
+    // L10: TODO 7: Create a method to get the map size in pixels
+    Vector2D GetMapSizeInPixels();
 
-public: 
-    std::string mapFileName;
-    std::string mapPath;
+public:
+    std::string mapFileName = "";
+    std::string mapPath = "";
 
 private:
-    bool mapLoaded;
+    bool mapLoaded = false;
     // L06: DONE 1: Declare a variable data of the struct MapData
     MapData mapData;
 };
