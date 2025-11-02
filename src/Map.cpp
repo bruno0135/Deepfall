@@ -284,6 +284,48 @@ Vector2D Map::MapToWorld(int i, int j) const
     return ret;
 }
 
+int Map::WorldToMapX(float worldX) const
+{
+    return (int)floorf(worldX / (float)mapData.tileWidth);
+}
+
+int Map::WorldToMapY(float worldY) const
+{
+    return (int)floorf(worldY / (float)mapData.tileHeight);
+}
+
+float Map::GetGroundYBelow(float worldX, float worldY) const
+{
+    // localizar la capa de colisiones
+    const MapLayer* collisions = nullptr;
+    for (const auto& layer : mapData.layers)
+    {
+        if (layer->name == "Collisions")
+        {
+            collisions = layer;
+            break;
+        }
+    }
+    if (!collisions) return worldY;
+
+    const int j = WorldToMapX(worldX);
+    int i = WorldToMapY(worldY);
+    if (j < 0 || j >= collisions->width) return worldY;
+
+    if (i < 0) i = 0;
+    for (; i < collisions->height; ++i)
+    {
+        int gid = (int)collisions->Get(i, j);
+        if (gid > 0)
+        {
+            // parte superior del tile i (en mundo)
+            return (float)(i * mapData.tileHeight);
+        }
+    }
+
+    return worldY;
+}
+
 bool Map::LoadProperties(pugi::xml_node& node, Properties& properties)
 {
     bool ret = false;

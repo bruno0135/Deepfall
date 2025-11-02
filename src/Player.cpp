@@ -25,7 +25,16 @@ bool Player::Awake()
 
 bool Player::Start()
 {
+    // Guardamos spawn base
     respawnPos = position;
+
+    // Ajustar spawn al suelo de la capa "Collisions"
+    float groundY = Engine::GetInstance().map->GetGroundYBelow(respawnPos.getX(), respawnPos.getY());
+    // colocar al jugador apoyado: top del tile - mitad del alto del sprite
+    respawnPos.setY(groundY - (float)(texH / 2));
+
+    // Igualamos la posición lógica al spawn ajustado antes de crear el cuerpo físico
+    position = respawnPos;
 
     std::unordered_map<int, std::string> aliases = { {0,"idle"},{11,"move"},{22,"jump"},{33,"die"} };
     anims.LoadFromTSX("Assets/Textures/player1Spritesheet.tsx", aliases);
@@ -101,7 +110,11 @@ void Player::Respawn()
     isJumping = false;
     jumpCount = 0;
 
-    pbody->SetPosition((int)respawnPos.getX(), (int)respawnPos.getY());
+    // Recalcular suelo por si el spawn está sobre vacío
+    float groundY = Engine::GetInstance().map->GetGroundYBelow(respawnPos.getX(), respawnPos.getY());
+    float spawnY = groundY - (float)(texH / 2);
+
+    pbody->SetPosition((int)respawnPos.getX(), (int)spawnY);
     Engine::GetInstance().physics->SetLinearVelocity(pbody, { 0, 0 });
 
     anims.SetCurrent("idle");

@@ -10,7 +10,7 @@ struct Properties
     struct Property
     {
         std::string name = "";
-        bool value = false; // We assume bool for now
+        bool value = false; // We assume that we are going to work only with bool for the moment
     };
 
     std::list<Property*> propertyList;
@@ -21,21 +21,22 @@ struct Properties
         {
             delete property;
         }
+
         propertyList.clear();
     }
 
     // L09: DONE 7: Method to ask for the value of a custom property
     Property* GetProperty(const char* name)
     {
-        for (const auto& property : propertyList)
-        {
-            if (property->name == name)
-            {
+        for (const auto& property : propertyList) {
+            if (property->name == name) {
                 return property;
             }
         }
+
         return nullptr;
     }
+
 };
 
 struct MapLayer
@@ -57,6 +58,7 @@ struct MapLayer
 
 // L06: TODO 2: Create a struct to hold information for a TileSet
 // Ignore Terrain Types and Tile Types for now, but we want the image!
+
 struct TileSet
 {
     int firstGid = 0;
@@ -70,8 +72,7 @@ struct TileSet
     SDL_Texture* texture = nullptr;
 
     // L07: TODO 7: Implement the method that receives the gid and returns a Rect
-    SDL_Rect GetRect(unsigned int gid)
-    {
+    SDL_Rect GetRect(unsigned int gid) {
         SDL_Rect rect = { 0 };
 
         int relativeIndex = (int)gid - firstGid;
@@ -82,6 +83,7 @@ struct TileSet
 
         return rect;
     }
+
 };
 
 // L06: TODO 1: Create a struct needed to hold the information to Map node
@@ -132,6 +134,14 @@ public:
 
     // L10: TODO 7: Create a method to get the map size in pixels
     Vector2D GetMapSizeInPixels();
+
+    // NUEVO: devuelve la Y (mundo) de la parte superior del primer tile sólido ("Collisions") debajo de worldX,worldY
+    float GetGroundYBelow(float worldX, float worldY) const;
+
+private:
+    // auxiliares para convertir mundo->mapa
+    int WorldToMapX(float worldX) const;
+    int WorldToMapY(float worldY) const;
 
 public:
     std::string mapFileName = "";
