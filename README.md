@@ -9,33 +9,33 @@ Is a 2d platformer game focused in adventure and exploration.
 # 🧱 Project Details
 Team Members:
 
--[Victor Perez](https://github.com/victorpeor)–[Code]
+- [Victor Perez](https://github.com/victorpeor)–[Code]
 
--[Bruno Gomez](https://github.com/bruno0135)–[Level Design/Artist]
+-  [Bruno Gomez](https://github.com/bruno0135)–[Level Design/Artist]
 
 
 # 🎮 Gameplay Controls
-| ------------- | ------------- | -------------|
-| Move Left |	A |
-| Move Right |	D |
-| Jump |	Space |
-| Quit Game |	ESC |
+
+ - Move Left 	A  
+ - Move Right 	D 
+ - Jump 	Space 
+ - Quit Game |	ESC |
 ...	...
-#  🧑‍💻 Debug Controls (optional)
+#  🧑‍💻 Debug Controls 
 
-|Show Menu|H|
+- Show Menu H.
 
-|Toggle God Mode|	F10|
+- Toggle God Mode	F10.
 
-|Show Colliders / Logic	|F9|
+- Show Colliders / Logic	F9.
 
-|Respawn | T |
+- Respawn T.
 
-|Cap FPS|F11|
+- Cap FPS F11.
 
 
 # 🚀 Last Release (v[1.0.0])
--Level 1 design.
+- Level 1 design.
 
 - Die animation.
 
