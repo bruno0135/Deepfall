@@ -29,6 +29,19 @@ bool Player::Awake()
 
 bool Player::Start()
 {
+    // Ajustar spawn al suelo de la capa "Collisions"
+    float groundY = Engine::GetInstance().map->GetGroundYBelow(respawnPos.getX(), respawnPos.getY());
+    // colocar al jugador apoyado: top del tile - mitad del alto del sprite
+    respawnPos.setY(groundY - (float)(texH / 2));
+
+    // Igualamos la posición lógica al spawn ajustado antes de crear el cuerpo físico
+    position = respawnPos;
+
+    std::unordered_map<int, std::string> aliases = { {0,"idle"},{11,"move"},{22,"jump"},{33,"die"} };
+    anims.LoadFromTSX("Assets/Textures/player1Spritesheet.tsx", aliases);
+    anims.SetCurrent("idle");
+    anims.SetCurrent("move");
+    anims.SetCurrent("jump");
     // Carga de textura y dimensiones del tile antes de ajustar spawn
     texture = Engine::GetInstance().textures->Load("Assets/Textures/player1_spritesheet.png");
     texW = 32;
@@ -105,7 +118,7 @@ void Player::Respawn()
 {
     isJumping = false;
     jumpCount = 0;
-
+    anims.SetCurrent("idle");
     // Recalcular el suelo por si el respawn está sobre vacío
     float groundY = Engine::GetInstance().map->GetGroundYBelow(respawnPos.getX(), respawnPos.getY());
     float spawnY = groundY - (float)(texH / 2);
@@ -145,11 +158,14 @@ void Player::Move()
     if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_A) == KEY_REPEAT)
     {
         velocity.x = -speed;
+        anims.SetCurrent("move");
     }
     if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_D) == KEY_REPEAT)
     {
         velocity.x = speed;
+        anims.SetCurrent("move");
     }
+   
 }
 
 void Player::Jump()
@@ -162,6 +178,7 @@ void Player::Jump()
         const float force = grounded ? jumpForceGround : jumpForceAir;
 
         Engine::GetInstance().physics->ApplyLinearImpulseToCenter(pbody, 0.0f, -force, true);
+        anims.SetCurrent("jump");
         isJumping = true;
         jumpCount++;
 
@@ -184,9 +201,8 @@ void Player::ApplyPhysics()
 
 void Player::Draw(float dt)
 {
-    // Primer tile del spritesheet en (0,0) de tamaño texW x texH
-    SDL_Rect animFrame = { SPR_MARGIN_X, SPR_MARGIN_Y, texW, texH };
-
+   anims.Update(dt);
+    const SDL_Rect& animFrame = anims.GetCurrentFrame();
     int x, y;
     pbody->GetPosition(x, y);
     position.setX((float)x);
@@ -274,6 +290,7 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB)
                 grounded = true;
                 isJumping = false;
                 jumpCount = 0;
+                anims.SetCurrent("idle");
                 jumpTimer.Start();
             }
         }
