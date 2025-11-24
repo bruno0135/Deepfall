@@ -44,7 +44,7 @@ bool Scene::Start()
 	Engine::GetInstance().audio->PlayMusic("Assets/Audio/Music/level-iv-339695.wav");
 
 	//L06 TODO 3: Call the function to load the map. 
-	Engine::GetInstance().map->Load("Assets/Maps/", "MapaPrueba3.tmx");
+	Engine::GetInstance().map->Load("Assets/Maps/", "Mapa1.tmx");
 	
 	return true;
 }
