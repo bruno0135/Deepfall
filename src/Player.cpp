@@ -38,12 +38,12 @@ bool Player::Start()
     position = respawnPos;
 
     std::unordered_map<int, std::string> aliases = { {0,"idle"},{11,"move"},{22,"jump"},{33,"die"} };
-    anims.LoadFromTSX("Assets/Textures/player1Spritesheet.tsx", aliases);
+    anims.LoadFromTSX("Assets/Textures/player_spritesheet.tsx", aliases);
     anims.SetCurrent("idle");
     anims.SetCurrent("move");
     anims.SetCurrent("jump");
     // Carga de textura y dimensiones del tile antes de ajustar spawn
-    texture = Engine::GetInstance().textures->Load("Assets/Textures/player1_spritesheet.png");
+    texture = Engine::GetInstance().textures->Load("Assets/Textures/player_spritesheet.png");
     texW = 32;
     texH = 32;
 
