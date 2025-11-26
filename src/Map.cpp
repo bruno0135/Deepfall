@@ -136,6 +136,8 @@ bool Map::Load(std::string path, std::string fileName)
             std::string imgName = tilesetNode.child("image").attribute("source").as_string();
             tileSet->texture = Engine::GetInstance().textures->Load((mapPath + imgName).c_str());
 
+
+
             mapData.tilesets.push_back(tileSet);
         }
 
