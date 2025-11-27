@@ -25,10 +25,10 @@
   <image source="PixelFantasy_Caves_1.0-20251024T065613Z-1-001/PixelFantasy_Caves_1.0/mainlev_build.png" width="1024" height="1024"/>
  </tileset>
  <tileset firstgid="6121" name="MapMetadata" tilewidth="32" tileheight="32" spacing="1" margin="1" tilecount="2" columns="2">
-  <image source="../../../../../Downloads/MapMetadata.png" width="67" height="34"/>
+  <image source="MapMetadata.png" width="67" height="34"/>
  </tileset>
  <tileset firstgid="6123" name="background4a" tilewidth="32" tileheight="32" tilecount="450" columns="30">
-  <image source="../../../../../Downloads/background4a.png" width="960" height="480"/>
+  <image source="../../../../../Downloads/PixelFantasy_Caves_1.0-20251023T055428Z-1-001/PixelFantasy_Caves_1.0/background4a.png" width="960" height="480"/>
  </tileset>
  <layer id="11" name="Capa de patrones 5" width="100" height="24">
   <properties>

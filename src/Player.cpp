@@ -42,6 +42,8 @@ bool Player::Start()
     anims.SetCurrent("idle");
     anims.SetCurrent("move");
     anims.SetCurrent("jump");
+    anims.SetCurrent("die"); // <<< cargamos también la animación de morir
+
     // Carga de textura y dimensiones del tile antes de ajustar spawn
     texture = Engine::GetInstance().textures->Load("Assets/Textures/player_spritesheet.png");
     texW = 32;
@@ -119,6 +121,7 @@ void Player::Respawn()
     isJumping = false;
     jumpCount = 0;
     anims.SetCurrent("idle");
+
     // Recalcular el suelo por si el respawn está sobre vacío
     float groundY = Engine::GetInstance().map->GetGroundYBelow(respawnPos.getX(), respawnPos.getY());
     float spawnY = groundY - (float)(texH / 2);
@@ -137,6 +140,10 @@ void Player::Die()
     if (isDying) return;
 
     isDying = true;
+
+    // Activar animacion de muerte
+    anims.SetCurrent("die");
+
     Engine::GetInstance().physics->SetLinearVelocity(pbody, { 0.0f, 0.0f });
     dieTimer.Start();
 }
@@ -155,6 +162,8 @@ void Player::GetPhysicsValues()
 
 void Player::Move()
 {
+    if (isDying) return;  // <<< No permitir movimiento si está muriendo
+
     if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_A) == KEY_REPEAT)
     {
         velocity.x = -speed;
@@ -165,11 +174,12 @@ void Player::Move()
         velocity.x = speed;
         anims.SetCurrent("move");
     }
-   
 }
 
 void Player::Jump()
 {
+    if (isDying) return;  // <<< No permitir salto si está muriendo
+
     const bool cooldownOk = (jumpTimer.ReadMSec() >= jumpCooldownMs);
     const bool canJump = (grounded && jumpCount < maxJumps) || (!grounded && jumpCount < maxJumps);
 
@@ -201,8 +211,9 @@ void Player::ApplyPhysics()
 
 void Player::Draw(float dt)
 {
-   anims.Update(dt);
+    anims.Update(dt);
     const SDL_Rect& animFrame = anims.GetCurrentFrame();
+
     int x, y;
     pbody->GetPosition(x, y);
     position.setX((float)x);
@@ -290,7 +301,11 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB)
                 grounded = true;
                 isJumping = false;
                 jumpCount = 0;
-                anims.SetCurrent("idle");
+
+                // No cambiar a idle si esta muriendo
+                if (!isDying)
+                    anims.SetCurrent("idle");
+
                 jumpTimer.Start();
             }
         }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.11.2" name="player_spritesheet" tilewidth="32" tileheight="32" tilecount="33" columns="11">
- <image source="player_spritesheet.png" width="352" height="96"/>
+<tileset version="1.10" tiledversion="1.11.2" name="player_spritesheet" tilewidth="32" tileheight="32" tilecount="44" columns="11">
+ <image source="player_spritesheet.png" width="352" height="128"/>
  <tile id="0">
   <animation>
    <frame tileid="0" duration="150"/>
@@ -36,6 +36,16 @@
    <frame tileid="22" duration="100"/>
    <frame tileid="23" duration="100"/>
    <frame tileid="24" duration="100"/>
+  </animation>
+ </tile>
+ <tile id="33">
+  <animation>
+   <frame tileid="33" duration="100"/>
+   <frame tileid="34" duration="100"/>
+   <frame tileid="35" duration="100"/>
+   <frame tileid="36" duration="100"/>
+   <frame tileid="37" duration="100"/>
+   <frame tileid="38" duration="100"/>
   </animation>
  </tile>
 </tileset>
