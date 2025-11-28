@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Entity.h"
+#include "Animation.h"
 #include <SDL3/SDL.h>
 
 struct SDL_Texture;
@@ -34,4 +35,7 @@ private:
 
 	//L08 TODO 4: Add a physics to an item
 	PhysBody* pbody;
+
+	// Sistema de animaciones
+	AnimationSet anims;
 };

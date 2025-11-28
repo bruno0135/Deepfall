@@ -213,6 +213,7 @@ bool Map::Load(std::string path, std::string fileName)
             }
         }
 
+
         // Sensores de daño y vacío (huecos)
         for (const auto& mapLayer : mapData.layers)
         {
@@ -239,6 +240,34 @@ bool Map::Load(std::string path, std::string fileName)
             }
         }
 
+        
+        for (const auto& mapLayer : mapData.layers)
+        {
+            if (mapLayer->name == "final")
+            {
+                for (int i = 0; i < mapData.height; i++)
+                {
+                    for (int j = 0; j < mapData.width; j++)
+                    {
+                        int gid = mapLayer->Get(i, j);
+                        if (gid > 0)
+                        {
+                            Vector2D mapCoord = MapToWorld(i, j);
+                            PhysBody* winZone = Engine::GetInstance().physics.get()->CreateRectangleSensor(
+                                (int)(mapCoord.getX() + (mapData.tileWidth * 0.5f)),
+                                (int)(mapCoord.getY() + (mapData.tileHeight * 0.5f)),
+                                mapData.tileWidth,
+                                mapData.tileHeight,
+                                STATIC
+                            );
+                            winZone->ctype = ColliderType::WIN_ZONE;
+                            LOG("WIN_ZONE created at (%d, %d)", (int)mapCoord.getX(), (int)mapCoord.getY());
+                        }
+                    }
+                }
+            }
+        }
+        
         ret = true;
 
         if (ret == true)

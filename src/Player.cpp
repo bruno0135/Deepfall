@@ -24,6 +24,8 @@ Player::~Player() {}
 bool Player::Awake()
 {
     position = Vector2D(100, 200);
+    initialSpawn = position;
+    checkpointPos = position;
     return true;
 }
 
@@ -31,33 +33,32 @@ bool Player::Start()
 {
     // Ajustar spawn al suelo de la capa "Collisions"
     float groundY = Engine::GetInstance().map->GetGroundYBelow(respawnPos.getX(), respawnPos.getY());
-    // colocar al jugador apoyado: top del tile - mitad del alto del sprite
     respawnPos.setY(groundY - (float)(texH / 2));
 
-    // Igualamos la posición lógica al spawn ajustado antes de crear el cuerpo físico
     position = respawnPos;
+    initialSpawn = respawnPos;
+    checkpointPos = respawnPos;
 
     std::unordered_map<int, std::string> aliases = { {0,"idle"},{11,"move"},{22,"jump"},{33,"die"} };
     anims.LoadFromTSX("Assets/Textures/player_spritesheet.tsx", aliases);
     anims.SetCurrent("idle");
     anims.SetCurrent("move");
     anims.SetCurrent("jump");
-    anims.SetCurrent("die"); // <<< cargamos también la animación de morir
+    anims.SetCurrent("die");
 
-    // Carga de textura y dimensiones del tile antes de ajustar spawn
     texture = Engine::GetInstance().textures->Load("Assets/Textures/player_spritesheet.png");
     texW = 32;
     texH = 32;
 
-    // Guardar spawn base y ajustarlo al suelo usando la capa "Collisions"
     respawnPos = position;
     {
         float groundY = Engine::GetInstance().map->GetGroundYBelow(respawnPos.getX(), respawnPos.getY());
-        respawnPos.setY(groundY - (float)(texH / 2)); // apoyar "pies"
+        respawnPos.setY(groundY - (float)(texH / 2));
         position = respawnPos;
+        initialSpawn = respawnPos;
+        checkpointPos = respawnPos;
     }
 
-    // Crear cuerpo físico en el spawn ajustado
     pbody = Engine::GetInstance().physics->CreateCircle((int)position.getX(), (int)position.getY(), texW / 2, bodyType::DYNAMIC);
     pbody->listener = this;
     pbody->ctype = ColliderType::PLAYER;
@@ -78,6 +79,22 @@ bool Player::Update(float dt)
         Die();
     }
 
+    // Manejar pantalla de victoria
+    if (isWinning)
+    {
+        if (winTimer.ReadMSec() >= winDelayMs)
+        {
+            // Reiniciar el juego después de ganar
+            ResetToInitialSpawn();
+            Respawn();
+            isWinning = false;
+        }
+
+        Draw(dt);
+        return true;
+    }
+
+    // Manejar pantalla de muerte
     if (isDying)
     {
         if (dieTimer.ReadMSec() >= dieDelayMs)
@@ -122,11 +139,13 @@ void Player::Respawn()
     jumpCount = 0;
     anims.SetCurrent("idle");
 
-    // Recalcular el suelo por si el respawn está sobre vacío
-    float groundY = Engine::GetInstance().map->GetGroundYBelow(respawnPos.getX(), respawnPos.getY());
+    // Decidir dónde aparecer según las muertes
+    Vector2D spawnPoint = hasCheckpoint ? checkpointPos : initialSpawn;
+
+    float groundY = Engine::GetInstance().map->GetGroundYBelow(spawnPoint.getX(), spawnPoint.getY());
     float spawnY = groundY - (float)(texH / 2);
 
-    pbody->SetPosition((int)respawnPos.getX(), (int)spawnY);
+    pbody->SetPosition((int)spawnPoint.getX(), (int)spawnY);
     Engine::GetInstance().physics->SetLinearVelocity(pbody, { 0, 0 });
 
     jumpTimer.Start();
@@ -137,21 +156,59 @@ void Player::Respawn()
 
 void Player::Die()
 {
-    if (isDying) return;
+    if (isDying || isWinning) return;
 
     isDying = true;
+    deathCount++;
 
-    // Activar animacion de muerte
+    LOG("Player died! Death count: %d/%d", deathCount, maxDeaths);
+
+    // Si supera el límite de muertes, reiniciar el juego
+    if (deathCount > maxDeaths)
+    {
+        LOG("Max deaths reached! Resetting game...");
+        ResetToInitialSpawn();
+    }
+
     anims.SetCurrent("die");
-
     Engine::GetInstance().physics->SetLinearVelocity(pbody, { 0.0f, 0.0f });
     dieTimer.Start();
+}
+
+void Player::Win()
+{
+    if (isDying || isWinning) return;
+
+    isWinning = true;
+    LOG("Player reached the WIN ZONE!");
+
+    anims.SetCurrent("idle");
+    Engine::GetInstance().physics->SetLinearVelocity(pbody, { 0.0f, 0.0f });
+    winTimer.Start();
 }
 
 void Player::Teleport()
 {
     if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_T) == KEY_DOWN)
         Respawn();
+}
+
+void Player::SetCheckpoint(Vector2D newCheckpoint)
+{
+    checkpointPos = newCheckpoint;
+    hasCheckpoint = true;
+    deathCount = 0; // Resetear contador al coger moneda
+    LOG("Checkpoint saved at (%.1f, %.1f). Deaths reset to 0.", checkpointPos.getX(), checkpointPos.getY());
+}
+
+void Player::ResetToInitialSpawn()
+{
+    // Reiniciar todas las variables del juego
+    checkpointPos = initialSpawn;
+    hasCheckpoint = false;
+    deathCount = 0;
+
+    LOG("Game reset to initial spawn. Coin will respawn on next scene reset.");
 }
 
 void Player::GetPhysicsValues()
@@ -162,7 +219,7 @@ void Player::GetPhysicsValues()
 
 void Player::Move()
 {
-    if (isDying) return;  // <<< No permitir movimiento si está muriendo
+    if (isDying) return;
 
     if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_A) == KEY_REPEAT)
     {
@@ -178,7 +235,7 @@ void Player::Move()
 
 void Player::Jump()
 {
-    if (isDying) return;  // <<< No permitir salto si está muriendo
+    if (isDying) return;
 
     const bool cooldownOk = (jumpTimer.ReadMSec() >= jumpCooldownMs);
     const bool canJump = (grounded && jumpCount < maxJumps) || (!grounded && jumpCount < maxJumps);
@@ -259,6 +316,25 @@ void Player::Draw(float dt)
 
     Engine::GetInstance().render->DrawTexture(texture, x - texW / 2, y - texH / 2, &animFrame);
 
+    // Pantalla de victoria
+    if (isWinning)
+    {
+        SDL_Rect screen = { 0, 0, cameraW, cameraH };
+        Engine::GetInstance().render->DrawRectangle(screen, 0, 0, 0, 180, true, false);
+
+        const char* txt = "YOU WIN!";
+        int scale = 4;
+        int textLength = (int)strlen(txt);
+        int charWidth = 8 * scale;
+        int textWidth = textLength * charWidth;
+        int textHeight = 16 * scale;
+        int textX = (cameraW - textWidth) / 2;
+        int textY = (cameraH - textHeight) / 2;
+
+        Engine::GetInstance().render->DrawText(txt, textX, textY, scale, 255, 215, 0, 255, false);
+    }
+
+    // Pantalla de muerte
     if (isDying)
     {
         SDL_Rect screen = { 0, 0, cameraW, cameraH };
@@ -274,6 +350,11 @@ void Player::Draw(float dt)
         int textY = (cameraH - textHeight) / 2;
 
         Engine::GetInstance().render->DrawText(txt, textX, textY, scale, 255, 0, 0, 255, false);
+
+        // Mostrar contador de muertes
+        char deathText[64];
+        snprintf(deathText, sizeof(deathText), "DEATHS: %d / %d", deathCount, maxDeaths);
+        Engine::GetInstance().render->DrawText(deathText, textX - 50, textY + 60, 2, 255, 255, 255, 255, false);
     }
 }
 
@@ -302,7 +383,6 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB)
                 isJumping = false;
                 jumpCount = 0;
 
-                // No cambiar a idle si esta muriendo
                 if (!isDying)
                     anims.SetCurrent("idle");
 
@@ -313,8 +393,14 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB)
     break;
 
     case ColliderType::ITEM:
-        LOG("Collision ITEM");
+        LOG("Collision ITEM - Setting checkpoint!");
         Engine::GetInstance().audio->PlayFx(pickCoinFxId);
+
+        // Guardar checkpoint en la posición de la moneda
+        int coinX, coinY;
+        physB->GetPosition(coinX, coinY);
+        SetCheckpoint(Vector2D((float)coinX, (float)coinY));
+
         physB->listener->Destroy();
         break;
 
@@ -326,6 +412,11 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB)
     case ColliderType::DEATH_ZONE:
         LOG("Has tocado la zona de muerte");
         Die();
+        break;
+
+    case ColliderType::WIN_ZONE:
+        LOG("Has llegado a la zona de victoria!");
+        Win();
         break;
 
     case ColliderType::UNKNOWN:

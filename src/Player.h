@@ -26,6 +26,12 @@ public:
     void ToggleGodMode();
     void HandleGodMode(float dt);
 
+    // Sistema de checkpoints
+    void SetCheckpoint(Vector2D newCheckpoint);
+    void Win();
+    void ResetToInitialSpawn();
+    int GetDeathCount() const { return deathCount; }
+
 private:
 
     void GetPhysicsValues();
@@ -36,7 +42,7 @@ private:
     void Draw(float dt);
     void CheckOutOfBounds();
     void Respawn();
-    void Die(); // animación de muerte
+    void Die();
 
 public:
 
@@ -74,5 +80,17 @@ private:
     // Animación de muerte
     bool isDying = false;
     Timer dieTimer;
-    float dieDelayMs = 1500.0f; // 1,5 segundos de duración
+    float dieDelayMs = 1500.0f;
+
+    //Animacion victoria
+    bool isWinning = false;
+    Timer winTimer;
+    float winDelayMs = 3000.0f; 
+
+    // Sistema de checkpoints
+    Vector2D initialSpawn = { 100, 200 };  // Spawn inicial del juego
+    Vector2D checkpointPos = { 1300, 375 }; // Último checkpoint (moneda)
+    bool hasCheckpoint = false;            // Mira si ha cogido alguna moneda
+    int deathCount = 0;                    // Contador de muertes
+    const int maxDeaths = 3;               // Máximo de muertes antes de reiniciar
 };

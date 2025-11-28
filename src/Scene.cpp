@@ -19,7 +19,8 @@ Scene::Scene() : Module()
 
 // Destructor
 Scene::~Scene()
-{}
+{
+}
 
 // Called before render is available
 bool Scene::Awake()
@@ -29,10 +30,10 @@ bool Scene::Awake()
 
 	//L04: TODO 3b: Instantiate the player using the entity manager
 	player = std::dynamic_pointer_cast<Player>(Engine::GetInstance().entityManager->CreateEntity(EntityType::PLAYER));
-	
-	//L08: TODO 4: Create a new item using the entity manager and set the position to (200, 672) to test
-	std::shared_ptr<Item> item = std::dynamic_pointer_cast<Item>(Engine::GetInstance().entityManager->CreateEntity(EntityType::ITEM));
-	item->position = Vector2D(200, 672);
+
+	//L08: TODO 4: Create a new item using the entity manager and set the position on the white platform
+	coin = std::dynamic_pointer_cast<Item>(Engine::GetInstance().entityManager->CreateEntity(EntityType::ITEM));
+	coin->position = coinInitialPos;
 
 	return ret;
 }
@@ -45,7 +46,7 @@ bool Scene::Start()
 
 	//L06 TODO 3: Call the function to load the map. 
 	Engine::GetInstance().map->Load("Assets/Maps/", "Mapa5.tmx");
-	
+
 	return true;
 }
 
@@ -61,16 +62,16 @@ bool Scene::Update(float dt)
 	//L03 TODO 3: Make the camera movement independent of framerate
 	float camSpeed = 1;
 
-	if(Engine::GetInstance().input->GetKey(SDL_SCANCODE_UP) == KEY_REPEAT)
+	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_UP) == KEY_REPEAT)
 		Engine::GetInstance().render->camera.y -= (int)ceil(camSpeed * dt);
 
-	if(Engine::GetInstance().input->GetKey(SDL_SCANCODE_DOWN) == KEY_REPEAT)
+	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_DOWN) == KEY_REPEAT)
 		Engine::GetInstance().render->camera.y += (int)ceil(camSpeed * dt);
 
-	if(Engine::GetInstance().input->GetKey(SDL_SCANCODE_LEFT) == KEY_REPEAT)
+	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_LEFT) == KEY_REPEAT)
 		Engine::GetInstance().render->camera.x -= (int)ceil(camSpeed * dt);
-	
-	if(Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_RIGHT) == KEY_REPEAT)
+
+	if (Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_RIGHT) == KEY_REPEAT)
 		Engine::GetInstance().render.get()->camera.x += (int)ceil(camSpeed * dt);
 
 	return true;
@@ -81,7 +82,7 @@ bool Scene::PostUpdate()
 {
 	bool ret = true;
 
-	if(Engine::GetInstance().input->GetKey(SDL_SCANCODE_ESCAPE) == KEY_DOWN)
+	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_ESCAPE) == KEY_DOWN)
 		ret = false;
 
 	return ret;
@@ -93,4 +94,17 @@ bool Scene::CleanUp()
 	LOG("Freeing scene");
 
 	return true;
+}
+
+void Scene::ResetLevel()
+{
+	LOG("Resetting level - Respawning coin");
+
+	// Si la moneda fue destruida, crear una nueva
+	if (!coin || !coin->active)
+	{
+		coin = std::dynamic_pointer_cast<Item>(Engine::GetInstance().entityManager->CreateEntity(EntityType::ITEM));
+		coin->position = coinInitialPos;
+		coin->Start(); // Inicializar la nueva moneda
+	}
 }

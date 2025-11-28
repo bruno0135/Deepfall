@@ -2,6 +2,9 @@
 
 #include "Module.h"
 #include "Player.h"
+#include "Item.h"
+#include "Vector2D.h"
+#include <memory>
 
 struct SDL_Texture;
 
@@ -32,8 +35,15 @@ public:
 	// Called before quitting
 	bool CleanUp();
 
+	// Reset level (respawn coin)
+	void ResetLevel();
+
 private:
 
 	//L03: TODO 3b: Declare a Player attribute
 	std::shared_ptr<Player> player;
+
+	// Item reference for respawning
+	std::shared_ptr<Item> coin;
+	Vector2D coinInitialPos = Vector2D(1300, 375);
 };
