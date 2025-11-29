@@ -30,54 +30,6 @@
  <tileset firstgid="6123" name="background4a" tilewidth="32" tileheight="32" tilecount="450" columns="30">
   <image source="PixelFantasy_Caves_1.0-20251024T065613Z-1-001/PixelFantasy_Caves_1.0/background4a.png" width="960" height="480"/>
  </tileset>
- <tileset firstgid="6573" name="Adobe Express - file" tilewidth="32" tileheight="32" spacing="1" margin="1" tilecount="4" columns="10">
-  <image source="../../../../Adobe Express - file.png" width="352" height="160"/>
-  <tile id="0">
-   <animation>
-    <frame tileid="0" duration="100"/>
-    <frame tileid="1" duration="100"/>
-    <frame tileid="2" duration="100"/>
-   </animation>
-  </tile>
-  <tile id="10">
-   <animation>
-    <frame tileid="10" duration="100"/>
-    <frame tileid="11" duration="100"/>
-    <frame tileid="12" duration="100"/>
-    <frame tileid="13" duration="100"/>
-   </animation>
-  </tile>
-  <tile id="20">
-   <animation>
-    <frame tileid="20" duration="100"/>
-    <frame tileid="21" duration="100"/>
-    <frame tileid="22" duration="100"/>
-    <frame tileid="23" duration="100"/>
-   </animation>
-  </tile>
-  <tile id="30">
-   <animation>
-    <frame tileid="30" duration="100"/>
-    <frame tileid="31" duration="100"/>
-    <frame tileid="32" duration="100"/>
-   </animation>
-  </tile>
- </tileset>
- <tileset firstgid="6604" name="Coinprove" tilewidth="32" tileheight="32" tilecount="0" columns="26">
-  <image source="../../../../Coinprove.png" width="840" height="859"/>
- </tileset>
- <tileset firstgid="6604" name="monedoncio" tilewidth="16" tileheight="16" tilecount="1" columns="5">
-  <image source="../../../../monedoncio.png" width="80" height="16"/>
-  <tile id="0">
-   <animation>
-    <frame tileid="0" duration="150"/>
-    <frame tileid="1" duration="150"/>
-    <frame tileid="2" duration="150"/>
-    <frame tileid="3" duration="150"/>
-    <frame tileid="4" duration="150"/>
-   </animation>
-  </tile>
- </tileset>
  <layer id="11" name="Capa de patrones 5" width="100" height="24">
   <properties>
    <property name="Draw" type="bool" value="true"/>
